@@ -2,8 +2,8 @@ package com.driver;
 
 public class Email {
 
-    private String emailId;
-    private String password;
+    private final String emailId;
+    private final String password;
     private String currentPassword;
 
     public Email(String emailId){
@@ -35,7 +35,7 @@ public class Email {
         String currentPassword = getCurrentPassword();
 
         // check if old password matches the current password
-        if (!oldPassword.equals(currentPassword)) {
+        if (oldPassword.equals(currentPassword)) {
             System.out.println("Incorrect old password");
             return;
         }
