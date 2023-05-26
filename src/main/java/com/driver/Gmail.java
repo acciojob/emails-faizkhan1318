@@ -1,19 +1,19 @@
 package com.driver;
 
 import java.util.ArrayList;
+import org.apache.commons.lang3.tuple.Triple;
 import java.util.Date;
 
 public class Gmail extends Email {
 
-    int inboxCapacity;//maximum number of mails inbox can store
-    private final ArrayList<Mails> inbox; //Inbox: Stores mails. Each mail has date (Date), sender (String), message (String). It is guaranteed that message is distinct for all mails.
-    private final ArrayList<Mails> trash;//Trash: Stores mails. Each mail has date (Date), sender (String), message (String)
+    int inboxCapacity;
+    private ArrayList<Triple<Date, String, String>> Inbox; //triple of date (Date), sender (String), message (String)
+    private ArrayList<Triple<Date, String, String>> Trash;
     public Gmail(String emailId, int inboxCapacity) {
         super(emailId);
-        this.inboxCapacity=inboxCapacity;
-        this.inbox=new ArrayList<>();
-        this.trash=new ArrayList<>();
-
+        this.inboxCapacity = inboxCapacity;
+        this.Inbox = new ArrayList<>();
+        this.Trash = new ArrayList<>();
     }
 
     public void receiveMail(Date date, String sender, String message){
@@ -21,82 +21,179 @@ public class Gmail extends Email {
         // It is guaranteed that:
         // 1. Each mail in the inbox is distinct.
         // 2. The mails are received in non-decreasing order. This means that the date of a new mail is greater than equal to the dates of mails received already.
-        if (inbox.size() == inboxCapacity) {
-            Mails oldestMail = inbox.get(0);
-            inbox.remove(0);
-            trash.add(oldestMail);
+        if(Inbox.size() == inboxCapacity){
+            Triple<Date, String, String> oldestMail = Inbox.get(0);
+            Inbox.remove(0);
+            Trash.add(oldestMail);
         }
-        inbox.add(new Mails(date, sender, message));
+        Triple<Date, String, String> mail = Triple.of(date, sender, message);
+        Inbox.add(mail);
     }
 
     public void deleteMail(String message){
         // Each message is distinct
-        // If the given message is found in any mail in the inbox, move the mail to trash, else do nothing
-        for (Mails mail : inbox) {
-            if (mail.getMessage().equals(message)) {
-                inbox.remove(mail);
-                trash.add(mail);
+        // If the given message is found in the inbox, move the mail to trash, else do nothing
+        int index = -1;
+        for(int i = 0; i<Inbox.size(); i++){
+            if(message.equals(Inbox.get(i).getRight())){
+                index = i;
                 break;
             }
         }
 
+        if(index != -1){
+            Trash.add(Inbox.get(index));
+            Inbox.remove(index);
+        }
     }
 
     public String findLatestMessage(){
         // If the inbox is empty, return null
-        // Else, return the message of the latest mail present in the inbox
-        if (inbox.isEmpty()) {
+        // Else, return the latest message present in the inbox
+        if(Inbox.isEmpty())
             return null;
-        }
-        Mails latestMail = inbox.get(inbox.size() - 1);
-        return latestMail.getMessage();
-
+        return Inbox.get(Inbox.size()-1).getRight();
     }
 
     public String findOldestMessage(){
         // If the inbox is empty, return null
-        // Else, return the message of the oldest mail present in the inbox
-        if (inbox.isEmpty()) {
+        // Else, return the oldest message present in the inbox
+        if(Inbox.isEmpty())
             return null;
-        }
-        Mails oldestMail = inbox.get(0);
-        return oldestMail.getMessage();
-
+        return Inbox.get(0).getRight();
     }
 
     public int findMailsBetweenDates(Date start, Date end){
-        //find number of mails in the inbox which are received between given dates
+        //find number of emails between given dates
         //It is guaranteed that start date <= end date
-        int count = 0;
-        for (Mails mail : inbox) {
-            if (mail.getDate().compareTo(start) >= 0 && mail.getDate().compareTo(end) <= 0) {
-                count++;
+        int cnt = 0;
+        for(int i = 0; i<Inbox.size(); i++){
+            if((Inbox.get(i).getLeft().compareTo(start) >= 0) && (Inbox.get(i).getLeft().compareTo(end) <= 0)){
+                cnt += 1;
             }
         }
-        return count;
-
+        return cnt;
     }
 
     public int getInboxSize(){
         // Return number of mails in inbox
-        return inbox.size();
-
+        return Inbox.size();
     }
 
     public int getTrashSize(){
         // Return number of mails in Trash
-        return trash.size();
-
+        return Trash.size();
     }
 
     public void emptyTrash(){
         // clear all mails in the trash
-        trash.clear();
-
+        Trash.clear();
     }
 
     public int getInboxCapacity() {
-        // Return the maximum number of mails that can be stored in the inbox
         return inboxCapacity;
     }
 }
+//package com.driver;
+//
+//import java.util.ArrayList;
+//import java.util.Date;
+//
+//public class Gmail extends Email {
+//
+//    int inboxCapacity;//maximum number of mails inbox can store
+//    private final ArrayList<Mails> inbox; //Inbox: Stores mails. Each mail has date (Date), sender (String), message (String). It is guaranteed that message is distinct for all mails.
+//    private final ArrayList<Mails> trash;//Trash: Stores mails. Each mail has date (Date), sender (String), message (String)
+//    public Gmail(String emailId, int inboxCapacity) {
+//        super(emailId);
+//        this.inboxCapacity=inboxCapacity;
+//        this.inbox=new ArrayList<>();
+//        this.trash=new ArrayList<>();
+//
+//    }
+//
+//    public void receiveMail(Date date, String sender, String message){
+//        // If the inbox is full, move the oldest mail in the inbox to trash and add the new mail to inbox.
+//        // It is guaranteed that:
+//        // 1. Each mail in the inbox is distinct.
+//        // 2. The mails are received in non-decreasing order. This means that the date of a new mail is greater than equal to the dates of mails received already.
+//        if (inbox.size() == inboxCapacity) {
+//            Mails oldestMail = inbox.get(0);
+//            inbox.remove(0);
+//            trash.add(oldestMail);
+//        }
+//        inbox.add(new Mails(date, sender, message));
+//    }
+//
+//    public void deleteMail(String message){
+//        // Each message is distinct
+//        // If the given message is found in any mail in the inbox, move the mail to trash, else do nothing
+//        for (Mails mail : inbox) {
+//            if (mail.getMessage().equals(message)) {
+//                inbox.remove(mail);
+//                trash.add(mail);
+//                break;
+//            }
+//        }
+//
+//    }
+//
+//    public String findLatestMessage(){
+//        // If the inbox is empty, return null
+//        // Else, return the message of the latest mail present in the inbox
+//        if (inbox.isEmpty()) {
+//            return null;
+//        }
+//        Mails latestMail = inbox.get(inbox.size() - 1);
+//        return latestMail.getMessage();
+//
+//    }
+//
+//    public String findOldestMessage(){
+//        // If the inbox is empty, return null
+//        // Else, return the message of the oldest mail present in the inbox
+//        if (inbox.isEmpty()) {
+//            return null;
+//        }
+//        Mails oldestMail = inbox.get(0);
+//        return oldestMail.getMessage();
+//
+//    }
+//
+//    public int findMailsBetweenDates(Date start, Date end){
+//        //find number of mails in the inbox which are received between given dates
+//        //It is guaranteed that start date <= end date
+//        int count = 0;
+//        for (Mails mail : inbox) {
+//            if (mail.getDate().compareTo(start) >= 0 && mail.getDate().compareTo(end) <= 0) {
+//                count++;
+//            }
+//        }
+//        return count;
+//
+//    }
+//
+//    public int getInboxSize(){
+//        // Return number of mails in inbox
+//        return inbox.size();
+//
+//    }
+//
+//    public int getTrashSize(){
+//        // Return number of mails in Trash
+//        return trash.size();
+//
+//    }
+//
+//    public void emptyTrash(){
+//        // clear all mails in the trash
+//        trash.clear();
+//
+//    }
+//
+//    public int getInboxCapacity() {
+//        // Return the maximum number of mails that can be stored in the inbox
+//        return inboxCapacity;
+//    }
+//}
+
